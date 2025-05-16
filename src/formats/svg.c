@@ -4,6 +4,7 @@
 
 #include "loader.h"
 
+#include <assert.h>
 #include <ctype.h>
 #include <string.h>
 
@@ -109,9 +110,7 @@ static void svg_render(struct imgdata* img, double scale, ssize_t x, ssize_t y,
     struct svg_data* data = img->decoder.data;
     cairo_surface_t* surface;
 
-    if (!data) {
-        return;
-    }
+    assert(data);
 
     // render svg to cairo surface
     surface = cairo_image_surface_create_for_data(
@@ -157,11 +156,9 @@ static void svg_free(struct imgdata* img)
 
     if (data->rsvg_handle) {
         g_object_unref(data->rsvg_handle);
-        data->rsvg_handle = NULL;
     }
 
     free(img->decoder.data);
-    img->decoder.data = NULL;
 }
 
 // SVG loader implementation
