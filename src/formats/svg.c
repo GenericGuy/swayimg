@@ -4,7 +4,6 @@
 
 #include "loader.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <string.h>
 
@@ -110,8 +109,6 @@ static void svg_render(struct imgdata* img, double scale, ssize_t x, ssize_t y,
     struct svg_data* data = img->decoder.data;
     cairo_surface_t* surface;
 
-    assert(data);
-
     // render svg to cairo surface
     surface = cairo_image_surface_create_for_data(
         (uint8_t*)dst->data, CAIRO_FORMAT_ARGB32, dst->width, dst->height,
@@ -207,13 +204,16 @@ enum image_status decode_svg(struct imgdata* img, const uint8_t* data,
 
     // use custom renderer
     img->decoder.data = calloc(1, sizeof(struct svg_data));
-    if (img->decoder.data) {
-        img->decoder.render = svg_render;
-        img->decoder.free = svg_free;
-        img->decoder.flip = svg_flip;
-        img->decoder.rotate = svg_rotate;
-        ((struct svg_data*)img->decoder.data)->rsvg_handle = svg;
+    if (!img->decoder.data) {
+        g_object_unref(svg);
+        return imgload_unknown;
     }
+
+    img->decoder.render = svg_render;
+    img->decoder.free = svg_free;
+    img->decoder.flip = svg_flip;
+    img->decoder.rotate = svg_rotate;
+    ((struct svg_data*)img->decoder.data)->rsvg_handle = svg;
 
     // render to virtual pixmap to use it in the export action
     svg_render(img, 1.0, 0, 0, pm);
